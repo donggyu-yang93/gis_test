@@ -9,4 +9,7 @@ class Post(models.Model):
     distance = models.FloatField(max_length=100, blank=True, null=True)
     result = models.FloatField(max_length=100, blank=True, null=True)
 
+    def __str__(self):
+        return f'[{self.pk}] 농장이름 :: {self.farm_name}'
+
 
