@@ -18,12 +18,10 @@
         <div class="col-md-4 col-lg-3 mt-4 float-end">
             <div class="card my-4">
                 <div class="card-header">위험 범위</div>
-                <div class="card-body">
-                    <div>
-                        <button id="m500" class="range-btn">500m</button>
-                        <button id="m1000" class="range-btn">1km</button>
-                        <button id="m3000" class="range-btn">3km</button>
-                    </div>
+                <div class="card-body d-flex justify-content-between">
+                    <button id="m500" class="range-btn" style="background-color: #66a3ff">500m</button>
+                    <button id="m1000" class="range-btn" style="background-color: #3385ff">1km</button>
+                    <button id="m2000" class="range-btn" style="background-color: #0066ff">2km</button>
                 </div>
             </div>
         </div>
@@ -31,87 +29,33 @@
 </div>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9d03e29c5153c0934ebbe2c8ede4fdd2&libraries=clusterer"></script>
 <script>
-    var map = new kakao.maps.Map(document.getElementById('map'), { // 지도를 표시할 div
-        center : new kakao.maps.LatLng(38.263044, 127.267627), // 지도의 중심좌표
-        level : 5 // 지도의 확대 레벨
-    });
+var mapContainer = document.getElementById('map'),
+    mapOption = {
+        center: new kakao.maps.LatLng(38.263044, 127.267627),
+        level: 3
+    };
 
-var clusterer = new kakao.maps.MarkerClusterer({
-map: map, // 마커들을 클러스터로 관리하고 표시할 지도 객체
-averageCenter: true, // 클러스터에 포함된 마커들의 평균 위치를 클러스터 마커 위치로 설정
-minLevel: 1, // 클러스터 할 최소 지도 레벨
-calculator: [10, 18], // 클러스터의 크기 구분 값, 각 사이값마다 설정된 text나 style이 적용된다
-texts: getTexts,
-styles: [  {
-width: "100px",
-height: "100px",
-background: "lime",
-borderRadius: "50px",
-color: "#000",
-textAlign: "center",
-fontWeight: "bold",
-lineHeight: "50px"
-},
-{
-width: "100px",
-height: "100px",
-background: "yellow",
-borderRadius: "50px",
-color: "#000",
-textAlign: "center",
-fontWeight: "bold",
-lineHeight: "50px"
-},
-{
-width: "100px",
-height: "100px",
-background: "red",
-borderRadius: "50px",
-color: "#000",
-textAlign: "center",
-fontWeight: "bold",
-lineHeight: "50px"
-},
-]
+var map = new kakao.maps.Map(mapContainer, mapOption);
 
+var m500 = document.getElementById('m500');
+var m1000 = document.getElementById('m1000');
+var m3000 = document.getElementById('m2000');
+
+m500.addEventListener('click', function() {
+    setLevel(6);
+});
+m1000.addEventListener('click', function() {
+    setLevel(7);
+});
+m3000.addEventListener('click', function() {
+    setLevel(8);
 });
 
-// 클러스터 내부에 삽입할 문자열 생성 함수입니다
-  const postList = [
-{% for post in post_list %}
-{
-farmName: "{{ post.farm_name }}",
-farmNum: "{{ post.farm_num }}",
-lat: "{{ post.lat }}",
-long: "{{ post.long }}",
-distance: "{{ post.distance }}",
-result: "{{ post.result }}"
-},
-{% endfor %}
-];
-function getTexts( count ) {
-if(count < 100) {
-let index = 0;
-let resultValue = parseFloat(postList[index].result).toFixed(2);
-return count + "농장<br>" + resultValue;
-} else {
-return count + "농장<br>" + resultValue;
-}
+function setLevel(level) {
+    map.setLevel(level);
 }
 
-// 데이터를 가져오기 위해 jQuery를 사용합니다
-// 데이터를 가져와 마커를 생성하고 클러스터러 객체에 넘겨줍니다
-$.get("{% static 'info.json' %}", function (data) {
-var markers = $(data.positions).map(function (i, position) {
-return new kakao.maps.Marker({
-position: new kakao.maps.LatLng(position.lat, position.long),
-title: position.farm_name,
-text: position.result,
-});
-});
 
-clusterer.addMarkers(markers);
-});
 </script>
 {% if post_list.exists %}
 {% for i in post_list %}
