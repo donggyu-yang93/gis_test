@@ -56,9 +56,6 @@ function setLevel(level) {
 }
 $.get("{% static 'info.json' %}", function (data) {
  var maxResult = Math.max.apply(Math, data.positions.map(position => parseFloat(position.result)));
-   // 클러스터러 생성
-
-
   var markers = $(data.positions).map(function (i, position) {
     // 커스텀 마커 스타일 설정
     var customMarkerContent = document.createElement('div');
@@ -87,19 +84,11 @@ $.get("{% static 'info.json' %}", function (data) {
       customMarkerContent.style.background = '#FF00' + hexColor;
     }
 
-
-
      // 마커 위치 설정
      var marker = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(position.lat, position.long),
         visible: false // 클러스터에서 보이지 않게 설정
     });
-
-      var clusterer = new kakao.maps.MarkerClusterer({
-      map: map,
-      averageCenter: true,
-      minClusterSize: 2 // 클러스터의 최소 사이즈 설정
-  });
 
     // 커스텀 오버레이 마커 생성
     var customMarker = new kakao.maps.CustomOverlay({
@@ -109,13 +98,16 @@ $.get("{% static 'info.json' %}", function (data) {
       yAnchor: 0.5,
       zIndex: 3
     });
-    // 클러스터에 마커 추가
-    clusterer.addMarker(marker);
 
     customMarker.setMap(map);
     return marker;
-  });
 
+    // 클러스터러 생성
+     var clusterer = new kakao.maps.MarkerClusterer({
+      map: map,
+      averageCenter: true,
+      minClusterSize: 2 // 클러스터의 최소 사이즈 설정
+  });
 
   var customLabel = {
     text: '',
@@ -141,7 +133,15 @@ $.get("{% static 'info.json' %}", function (data) {
       this._clusterMarker.setPosition(cluster.getCenter());
   };
 
+        // 클러스터에 마커 추가
+    clusterer.addMarker(marker);
+    return clusterer
+
 });
+  });
+
+
+
 
 </script>
 {% if post_list.exists %}
