@@ -54,7 +54,49 @@ m3000.addEventListener('click', function() {
 function setLevel(level) {
     map.setLevel(level);
 }
+$.get("{% static 'info.json' %}", function (data) {
+ var maxResult = Math.max.apply(Math, data.positions.map(position => parseFloat(position.result)));
+  var markers = $(data.positions).map(function (i, position) {
+    // 커스텀 마커 스타일 설정
+    var customMarkerContent = document.createElement('div');
+    customMarkerContent.style.width = '100px';
+    customMarkerContent.style.height = '100px';
+    customMarkerContent.style.borderRadius = '50px';
+    customMarkerContent.style.color = '#000';
+    customMarkerContent.style.textAlign = 'center';
+    customMarkerContent.style.fontWeight = 'bold';
+    customMarkerContent.style.lineHeight = '50px';
+    customMarkerContent.innerText = position.farm_name + '\n' + parseFloat(position.result).toFixed(2);
 
+    // result 값에 따른 배경색 변경
+    var resultValue = parseFloat(position.result);
+    if (resultValue < 10) {
+      customMarkerContent.style.background = 'lime';
+    } else if (resultValue >= 10 && resultValue < 18) {
+      customMarkerContent.style.background = 'yellow';
+    }  else {
+      var hexColor = 0xFF - Math.round(((resultValue - 18) / (maxResult - 18)) * 255);
+      if (hexColor < 16) {
+        hexColor = "0" + hexColor.toString(16);
+      } else {
+        hexColor = hexColor.toString(16);
+      }
+      customMarkerContent.style.background = '#FF00' + hexColor;
+    }
+
+    // 커스텀 오버레이 마커 생성
+    var customMarker = new kakao.maps.CustomOverlay({
+      position: new kakao.maps.LatLng(position.lat, position.long),
+      content: customMarkerContent, // 지도에 표시할 마커의 HTML 구조와 스타일
+      xAnchor: 0.5,
+      yAnchor: 0.5,
+      zIndex: 3
+    });
+
+    customMarker.setMap(map);
+    return customMarker;
+  });
+});
 
 </script>
 {% if post_list.exists %}
