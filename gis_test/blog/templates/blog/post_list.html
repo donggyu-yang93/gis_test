@@ -24,6 +24,11 @@
                     <button id="m2000" class="range-btn" style="background-color: #0066ff">2km</button>
                 </div>
             </div>
+            <div class="card my-4 mt-auto">
+                <div class="card-body">
+                    <button id="exportCsv" class="btn btn-primary" onclick="exportToCsv()">위험부위 CSV 파일로 출력</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -54,6 +59,64 @@ m3000.addEventListener('click', function() {
 function setLevel(level) {
     map.setLevel(level);
 }
+
+var clusterer = new kakao.maps.MarkerClusterer({
+        map: map, // 마커들을 클러스터로 관리하고 표시할 지도 객체
+        averageCenter: true, // 클러스터에 포함된 마커들의 평균 위치를 클러스터 마커 위치로 설정
+        minLevel: 1, // 클러스터 할 최소 지도 레벨
+        calculator: function(markersCount, markers) {
+        const sum = markers.reduce((acc, marker) => acc + marker.getOptions().result, 0);
+        const avgValue = parseFloat((sum / markersCount).toFixed(2));
+
+        if (avgValue < 10) {
+            return 0;
+        } else if (avgValue >= 10 && avgValue < 18) {
+            return 1;
+        } else {
+            return 2;
+        }
+        },
+        texts: getTexts,
+        styles: [{ // calculator 각 사이 값 마다 적용될 스타일을 지정한다
+                width : '30px', height : '30px',
+                background: 'rgba(51, 204, 255, .8)',
+                borderRadius: '15px',
+                color: '#000',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                lineHeight: '31px'
+            },
+            {
+                width : '40px', height : '40px',
+                background: 'rgba(255, 153, 0, .8)',
+                borderRadius: '20px',
+                color: '#000',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                lineHeight: '41px'
+            },
+            {
+                width : '50px', height : '50px',
+                background: 'rgba(255, 51, 204, .8)',
+                borderRadius: '25px',
+                color: '#000',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                lineHeight: '51px'
+            },
+            ]
+    });
+         function getTexts( count, markers ) {
+               const sum = markers.reduce((acc, marker) => acc + marker.getOptions().result, 0);
+               const avgValue = parseFloat((sum / count).toFixed(2));
+                 if(avgValue < 10) {
+                    return count +"농장<br>" + avgValue;
+               } else if(avgValue >= 10 && avgValue < 18) {
+                    return count +"농장<br>" + avgValue;
+               } else {
+                    return count +"농장<br>" + avgValue;
+               }
+               }
 $.get("{% static 'info.json' %}", function (data) {
  var maxResult = Math.max.apply(Math, data.positions.map(position => parseFloat(position.result)));
   var markers = $(data.positions).map(function (i, position) {
@@ -84,12 +147,6 @@ $.get("{% static 'info.json' %}", function (data) {
       customMarkerContent.style.background = '#FF00' + hexColor;
     }
 
-     // 마커 위치 설정
-     var marker = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(position.lat, position.long),
-        visible: false // 클러스터에서 보이지 않게 설정
-    });
-
     // 커스텀 오버레이 마커 생성
     var customMarker = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(position.lat, position.long),
@@ -100,47 +157,10 @@ $.get("{% static 'info.json' %}", function (data) {
     });
 
     customMarker.setMap(map);
-    return marker;
-
-    // 클러스터러 생성
-     var clusterer = new kakao.maps.MarkerClusterer({
-      map: map,
-      averageCenter: true,
-      minClusterSize: 2 // 클러스터의 최소 사이즈 설정
+    return customMarker;
   });
-
-  var customLabel = {
-    text: '',
-    className: 'custom-label'
-  };
-
-  // 클러스터러의 styler 함수를 수정하여 클러스터의 레이블을 표시할 수 있습니다.
-  clusterer.styler = function (cluster) {
-      var count = cluster.getSize(); // 클러스터 내 마커 개수
-      var result = 0;
-
-      for (var i = 0; i < count; i++) {
-          result += parseFloat(data.positions[i].result);
-      }
-
-      var average = (result / count).toFixed(2); // 클러스터 내 평균 위험도
-
-      this._clusterMarker.setIcon({
-          text: count + '농장, ' + '평균 위험도: ' + average,
-          className: this._styles.className || ''
-      });
-
-      this._clusterMarker.setPosition(cluster.getCenter());
-  };
-
-        // 클러스터에 마커 추가
-    clusterer.addMarker(marker);
-    return clusterer
-
+  clusterer.addMarkers(markers);
 });
-  });
-
-
 
 
 </script>
