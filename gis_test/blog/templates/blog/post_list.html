@@ -36,7 +36,7 @@
 <script>
 var mapContainer = document.getElementById('map'),
     mapOption = {
-        center: new kakao.maps.LatLng(38.159816, 127.4114),
+        center: new kakao.maps.LatLng(38.174961, 127.261605),
         level: 3
     };
 
@@ -154,6 +154,39 @@ $.get("{% static 'info.json' %}", function (data) {
   });
 
 
+// 위험부위 출력
+function exportToCsv() {
+  // info.json 파일에서 데이터 가져오기
+  $.get("{% static 'info.json' %}", function (data) {
+    var maxResult  = Math.max.apply(Math, data.positions.map(position => parseFloat(position.result)));
+    var markers = $(data.positions).map(function (i, position) {
+      if (parseFloat(position.result) >= 18) {
+        return position;
+      }
+    });
+
+    // CSV로 변환
+    var csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "farm_num,farm_name,latitude,longitude,distance,result\n"; //CSV 헤더 추가
+
+    markers.each(function (i, position) {
+      csvContent += `${position.farm_num},${position.farm_name},${position.lat},${position.long},${position.distance},${position.result}\n`;
+    });
+
+    // 다운로드 링크 생성
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "dangerous_locations.csv");
+    document.body.appendChild(link);
+
+    // 다운로드 실행
+    link.click();
+
+    // 링크 제거
+    document.body.removeChild(link);
+  });
+}
 
 
 </script>
