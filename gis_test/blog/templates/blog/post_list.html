@@ -96,7 +96,7 @@ var clusterer = new kakao.maps.MarkerClusterer({
     });
 
     function getTexts( count, avg ) {
-        var avg = parseFloat(customMarkerContent1 / count).toFixed(2);
+        var avg = parseFloat(customMarkerContent1*3 / count).toFixed(2);
 
       // 한 클러스터 객체가 포함하는 마커의 개수에 따라 다른 텍스트 값을 표시합니다
       if(count < 10) {
@@ -119,7 +119,7 @@ $.get("{% static 'info.json' %}", function (data) {
     customMarkerContent.style.textAlign = 'center';
     customMarkerContent.style.fontWeight = 'bold';
     customMarkerContent.style.lineHeight = '50px';
-    customMarkerContent.innerText = position.farm_name + '\n' + parseFloat(position.result).toFixed(2);
+    customMarkerContent.innerText = position.farm_name + '\n' + parseFloat(position.result).toFixed(2) + '\n' + position.farm_num;
     customMarkerContent1 = parseFloat(position.result).toFixed(2);
 
     // result 값에 따른 배경색 변경
@@ -135,7 +135,7 @@ $.get("{% static 'info.json' %}", function (data) {
       } else {
         hexColor = hexColor.toString(16);
       }
-      customMarkerContent.style.background = '#FF00' + hexColor;
+      customMarkerContent.style.background = '#FF' + hexColor + '00';
     }
 
     // 커스텀 오버레이 마커 생성
@@ -158,7 +158,7 @@ $.get("{% static 'info.json' %}", function (data) {
 function exportToCsv() {
   // info.json 파일에서 데이터 가져오기
   $.get("{% static 'info.json' %}", function (data) {
-    var maxResult  = Math.max.apply(Math, data.positions.map(position => parseFloat(position.result)));
+
     var markers = $(data.positions).map(function (i, position) {
       if (parseFloat(position.result) >= 18) {
         return position;
